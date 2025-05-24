@@ -1,0 +1,23 @@
+{
+  "name": "yarn-cli-auto-completions",
+  "packageManager": "yarn@4.9.1",
+  "devDependencies": {
+    "@aryaemami59/eslint-config": "^0.0.5",
+    "@aryaemami59/prettier-config": "^0.0.5",
+    "@aryaemami59/tsconfig": "^0.0.5",
+    "@aryaemami59/vitest-config": "^0.0.5",
+    "@types/node": "^22.15.21",
+    "@yarnpkg/cli": "^4.9.1",
+    "eslint": "^9.27.0",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  },
+  "scripts": {
+    "format": "prettier -w .",
+    "lint": "eslint .",
+    "build": "tsx src/index.ts"
+  },
+  "type": "module"
+}
