@@ -165,51 +165,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aryaemami59/eslint-config@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@aryaemami59/eslint-config@npm:0.0.5"
+"@aryaemami59/eslint-config@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@aryaemami59/eslint-config@npm:0.0.6"
   dependencies:
-    "@eslint/js": "npm:^9.27.0"
-    "@typescript-eslint/utils": "npm:^8.32.1"
-    eslint-config-prettier: "npm:^10.1.5"
-    globals: "npm:^16.1.0"
-    typescript-eslint: "npm:^8.32.1"
+    "@eslint/core": "npm:*"
+    "@eslint/js": "npm:^10"
+    "@typescript-eslint/utils": "npm:^8.54.0"
+    eslint-config-prettier: "npm:^10.1.8"
+    globals: "npm:^17.3.0"
+    typescript-eslint: "npm:^8.54.0"
   peerDependencies:
-    eslint: ">=8.56.0"
+    "@eslint/core": "*"
+    eslint: ">=9"
     typescript: "*"
+  dependenciesMeta:
+    "@eslint/core":
+      optional: true
   peerDependenciesMeta:
+    "@eslint/core":
+      optional: true
     eslint:
       optional: true
     typescript:
       optional: true
-  checksum: 10c0/b22525f938b13c96602dea68ff14c95dd0fdd9c1bdb17b1ee0a9ee6e9bb1e671f434f6a90952b9b95b980d9114e8f6f8a668bb877406fb56f1e75890122236ed
+  checksum: 10c0/bf9ba7d54fdbbf53f8c86446c445a59aebdd32e91b9b67663fb4fb0bc0b4818c9ba8469e751efe61e0b25f0adfa6a1b5c944f0eb935917453b8aa45ef95384e4
   languageName: node
   linkType: hard
 
-"@aryaemami59/prettier-config@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@aryaemami59/prettier-config@npm:0.0.5"
+"@aryaemami59/prettier-config@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@aryaemami59/prettier-config@npm:0.0.6"
   peerDependencies:
     prettier: ">=3"
   peerDependenciesMeta:
     prettier:
       optional: true
-  checksum: 10c0/7676a6ba1efca8c627a8c73a8f818f19730c363d5728e4708516066eca02196b08da1202b94299a4e5f794cd767e03f6f118b0f63f8e15fc9cfe214d2f4bed36
+  checksum: 10c0/80f58eba624c6dd3f78a697bbca462aa7178eb145417025e48c611b837a122a7ced4f42e74e79934c3b6bae26cd207d4d0a15c719a5c69b0ad7a59e6b009e488
   languageName: node
   linkType: hard
 
-"@aryaemami59/tsconfig@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@aryaemami59/tsconfig@npm:0.0.5"
-  checksum: 10c0/e94a963824f0cc1329a2fbebeb4e1f638060e2e63643ef417f4dad5f77857c2f06a3c7f1f9cac948fe6c8dfb48b0bf2dfcfb032c7e047eab70f4ee33db95fd2e
+"@aryaemami59/tsconfig@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@aryaemami59/tsconfig@npm:0.0.6"
+  checksum: 10c0/6e8d9a67fab8fcf5295f3494af3906a47455b4ebdad67a4b6fa35a8f68084f0011bb29f14cff5a20c2c5490b9cc77693b803027d999fb1f12da371ef6e1a89c5
   languageName: node
   linkType: hard
 
-"@aryaemami59/vitest-config@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@aryaemami59/vitest-config@npm:0.0.5"
+"@aryaemami59/vitest-config@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@aryaemami59/vitest-config@npm:0.0.6"
   dependencies:
-    vite-tsconfig-paths: "npm:^5.1.4"
+    vite-tsconfig-paths: "npm:^6.0.5"
   peerDependencies:
     vite: "*"
     vitest: ">=1"
@@ -218,7 +225,7 @@ __metadata:
       optional: true
     vitest:
       optional: true
-  checksum: 10c0/7ea967a8c8565734068a07719a0fe30ba613350acb95b9a26ac5b126f0e3c0b48f1eee215b77b70155bc572564bc8478fb709c9a3e72c544cd55066640339cb4
+  checksum: 10c0/5cea7be2914e73fdd6de78bc9672b4edf51b5a4065c29f78cb43fe7c9bf47fc2a5d17968007789b900853756e3976d70a654b99a5cddb209ab5eb5d67ffe9998
   languageName: node
   linkType: hard
 
@@ -442,7 +449,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/core@npm:^1.1.0":
+"@eslint/core@npm:*, @eslint/core@npm:^1.1.0":
   version: 1.1.0
   resolution: "@eslint/core@npm:1.1.0"
   dependencies:
@@ -451,7 +458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:^10.0.1":
+"@eslint/js@npm:^10, @eslint/js@npm:^10.0.1":
   version: 10.0.1
   resolution: "@eslint/js@npm:10.0.1"
   peerDependencies:
@@ -460,13 +467,6 @@ __metadata:
     eslint:
       optional: true
   checksum: 10c0/9f3fcaf71ba7fdf65d82e8faad6ecfe97e11801cc3c362b306a88ea1ed1344ae0d35330dddb0e8ad18f010f6687a70b75491b9e01c8af57acd7987cee6b3ec6c
-  languageName: node
-  linkType: hard
-
-"@eslint/js@npm:^9.27.0":
-  version: 9.39.2
-  resolution: "@eslint/js@npm:9.39.2"
-  checksum: 10c0/00f51c52b04ac79faebfaa65a9652b2093b9c924e945479f1f3945473f78aee83cbc76c8d70bbffbf06f7024626575b16d97b66eab16182e1d0d39daff2f26f5
   languageName: node
   linkType: hard
 
@@ -1146,7 +1146,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.54.0, @typescript-eslint/utils@npm:^8.32.1":
+"@typescript-eslint/utils@npm:8.54.0, @typescript-eslint/utils@npm:^8.54.0":
   version: 8.54.0
   resolution: "@typescript-eslint/utils@npm:8.54.0"
   dependencies:
@@ -2476,7 +2476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:^10.1.5":
+"eslint-config-prettier@npm:^10.1.8":
   version: 10.1.8
   resolution: "eslint-config-prettier@npm:10.1.8"
   peerDependencies:
@@ -2877,10 +2877,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^16.1.0":
-  version: 16.5.0
-  resolution: "globals@npm:16.5.0"
-  checksum: 10c0/615241dae7851c8012f5aa0223005b1ed6607713d6813de0741768bd4ddc39353117648f1a7086b4b0fa45eae733f1c0a0fe369aa4e543bb63f8de8990178ea9
+"globals@npm:^17.3.0":
+  version: 17.3.0
+  resolution: "globals@npm:17.3.0"
+  checksum: 10c0/7f21443ecaa60c6e9ff56d9fb6f10a9b5f9514e7f22e5392f715472bb220ce31c865ebf414a32695150e733fb3e1013e6322dbce70fddd1e066f372b8d55a4b8
   languageName: node
   linkType: hard
 
@@ -4523,7 +4523,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.32.1":
+"typescript-eslint@npm:^8.54.0":
   version: 8.54.0
   resolution: "typescript-eslint@npm:8.54.0"
   dependencies:
@@ -4624,19 +4624,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-tsconfig-paths@npm:^5.1.4":
-  version: 5.1.4
-  resolution: "vite-tsconfig-paths@npm:5.1.4"
+"vite-tsconfig-paths@npm:^6.0.5":
+  version: 6.1.0
+  resolution: "vite-tsconfig-paths@npm:6.1.0"
   dependencies:
     debug: "npm:^4.1.1"
     globrex: "npm:^0.1.2"
     tsconfck: "npm:^3.0.3"
   peerDependencies:
     vite: "*"
-  peerDependenciesMeta:
-    vite:
-      optional: true
-  checksum: 10c0/6228f23155ea25d92b1e1702284cf8dc52ad3c683c5ca691edd5a4c82d2913e7326d00708cef1cbfde9bb226261df0e0a12e03ef1d43b6a92d8f02b483ef37e3
+  checksum: 10c0/b2c9edb43592f4c4e4c4b9f1a613a196e78b727a8ffdd77a4bad1833dcf903fb9a8b23eabf5113f800585f87c2e8e9f93cba9a0e21cfe9a7e58edc7e9edcb3f5
   languageName: node
   linkType: hard
 
@@ -4877,10 +4874,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "yarn-cli-auto-completions@workspace:."
   dependencies:
-    "@aryaemami59/eslint-config": "npm:^0.0.5"
-    "@aryaemami59/prettier-config": "npm:^0.0.5"
-    "@aryaemami59/tsconfig": "npm:^0.0.5"
-    "@aryaemami59/vitest-config": "npm:^0.0.5"
+    "@aryaemami59/eslint-config": "npm:^0.0.6"
+    "@aryaemami59/prettier-config": "npm:^0.0.6"
+    "@aryaemami59/tsconfig": "npm:^0.0.6"
+    "@aryaemami59/vitest-config": "npm:^0.0.6"
     "@eslint/js": "npm:^10.0.1"
     "@types/node": "npm:^25.2.2"
     "@yarnpkg/cli": "npm:^4.12.0"
