@@ -1,8 +1,40 @@
 {
-  "extends": "@aryaemami59/tsconfig/node-next/with-js",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "erasableSyntaxOnly": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "lib": ["ESNext"],
+    "libReplacement": false,
+    "module": "nodenext",
+    "moduleDetection": "force",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "noEmitOnError": true,
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+    "rewriteRelativeImportExtensions": true,
     "rootDir": "./",
-    "outDir": "./dist"
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "esnext",
+    "types": ["node"],
+    "useDefineForClassFields": true,
+    "useUnknownInCatchVariables": true,
+    "verbatimModuleSyntax": true
   },
-  "include": ["."]
+  "extends": "@aryaemami59/tsconfig/node-next/with-js",
+  "include": ["**/*.*"]
 }
