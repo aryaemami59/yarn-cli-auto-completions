@@ -1,9 +1,19 @@
 {
+  "author": {
+    "email": "aryaemami59@yahoo.com",
+    "name": "Arya Emami",
+    "url": "https://github.com/aryaemami59/yarn-cli-auto-completions.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aryaemami59/yarn-cli-auto-completions/issues"
+  },
+  "description": "Auto completions for Yarn CLI commands",
   "devDependencies": {
     "@aryaemami59/eslint-config": "^0.0.5",
     "@aryaemami59/prettier-config": "^0.0.5",
     "@aryaemami59/tsconfig": "^0.0.5",
     "@aryaemami59/vitest-config": "^0.0.5",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^25.2.2",
     "@yarnpkg/cli": "^4.12.0",
     "eslint": "^10.0.0",
@@ -12,8 +22,38 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/aryaemami59"
+    }
+  ],
+  "homepage": "https://github.com/aryaemami59/yarn-cli-auto-completions#readme",
+  "keywords": [
+    "yarn",
+    "cli",
+    "auto-completions"
+  ],
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "name": "yarn-cli-auto-completions",
   "packageManager": "yarn@4.12.0",
+  "publishConfig": {
+    "provenance": true
+  },
+  "repository": {
+    "directory": ".",
+    "type": "git",
+    "url": "https://github.com/aryaemami59/yarn-cli-auto-completions.git"
+  },
   "scripts": {
     "build": "node src/index.ts",
     "format": "prettier --ignore-path=$PROJECT_CWD/.gitignore --config=$PROJECT_CWD/prettier.config.mjs --write $INIT_CWD",
@@ -22,5 +62,9 @@
     "lint-fix": "eslint --config=$PROJECT_CWD/eslint.config.mjs --no-error-on-unmatched-pattern --fix $INIT_CWD",
     "typecheck": "tsc -p $INIT_CWD/tsconfig.json --noEmit"
   },
-  "type": "module"
+  "sideEffects": false,
+  "source": "./src/index.ts",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
 }

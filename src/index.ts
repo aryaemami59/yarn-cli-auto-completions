@@ -17,7 +17,7 @@ const definitions = cli
   .definitions()
   .sort((a, b) => a.path.localeCompare(b.path))
 
-type DefObject = {
+export type DefObject = {
   flags: string[]
   subCommands: string[]
   command: string

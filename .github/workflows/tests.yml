@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: '${{ github.workflow }} - ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  check-lint-and-formatting:
+    name: Check lint and formatting with Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        node-version: [24]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+        uses: actions/setup-node@v6
+        with:
+          cache: 'yarn'
+          check-latest: true
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Check for duplicate packages
+        run: yarn dedupe --check --strategy highest
+
+      - name: Check formatting
+        run: yarn run format-check
+
+      - name: Lint files
+        run: yarn run lint
+
+  typecheck:
+    name: Test types with TypeScript ${{ matrix.ts }} on ${{ matrix.os }} and Node.js ${{ matrix.node-version }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        node-version: [24]
+        os: [ubuntu-latest]
+        ts: [5.8, 5.9]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+        uses: actions/setup-node@v6
+        with:
+          cache: 'yarn'
+          check-latest: true
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Install TypeScript v${{ matrix.ts }}
+        run: yarn up typescript@${{ matrix.ts }}
+
+      - name: Typecheck with TypeScript v${{ matrix.ts }}
+        run: yarn run typecheck
+
+  build:
+    name: Build with Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        node-version: [24]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+        uses: actions/setup-node@v6
+        with:
+          cache: 'yarn'
+          check-latest: true
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build library with Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+        run: yarn run build
+
+      - name: Did we fail?
+        if: failure()
+        run: ls -R .
