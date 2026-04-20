@@ -1,145 +1,334 @@
-import type * as yarnCliPackage from '@yarnpkg/cli'
-import type { Definition } from 'clipanion'
+import { getCli } from '@yarnpkg/cli'
 import * as fs from 'node:fs/promises'
-import { tsImport } from 'tsx/esm/api'
+import { BASH_FILE, OUTPUT_DIRECTORY } from './constants.ts'
+import { clean } from './utils/index.ts'
 
-type YarnCliPackage = typeof yarnCliPackage
-
-const { getCli }: YarnCliPackage = (
-  await tsImport('@yarnpkg/cli', {
-    parentURL: import.meta.url,
-  })
-).default
-
+/**
+ * The Yarn CLI instance, used to extract command definitions.
+ */
 const cli = await getCli()
 
+/**
+ * All command definitions exposed by the Yarn CLI, sorted alphabetically
+ * by their full path (e.g. `"yarn add"`, `"yarn config get"`).
+ */
 const definitions = cli
-  .definitions()
+  .definitions({ colored: false })
   .sort((a, b) => a.path.localeCompare(b.path))
 
-export type DefObject = {
+/**
+ * Metadata collected for a single node in the command tree.
+ */
+type CommandInfo = {
+  /**
+   * All flag names (e.g. `--json`, `-E`) accepted by this command or any of
+   * its definitions. Duplicates are excluded.
+   */
   flags: string[]
-  subCommands: string[]
-  command: string
-  definition: Definition
-  splitCommands: string[]
+
+  /**
+   * The immediate child command names that appear under this node
+   * (e.g. `"get"` and `"set"` under `"config"`).
+   */
+  subcommands: Set<string>
 }
 
-const definitionsMap = new Map<string, Set<string>>()
+/**
+ * A map from a command path (without the leading `"yarn"` word) to its
+ * aggregated {@linkcode CommandInfo}.
+ *
+ * @example
+ *
+ * ```ts
+ * commandMap.get('config get') // { flags: ['--json', ...], subcommands: Set {} }
+ * commandMap.get('config')     // { flags: [], subcommands: Set { 'get', 'set', ... } }
+ * ```
+ */
+const commandMap = new Map<string, CommandInfo>()
 
-const info = definitions.flatMap((definition) => {
-  const splitCommands = definition.path.split(' ')
-  const [, command, ...subCommandsArray] = splitCommands
-  // const definitionMap = definitionsMap.get(command)
+definitions.forEach((definition) => {
+  /**
+   * Path segments with the leading `"yarn"` word removed.
+   */
+  const parts = definition.path.split(' ').slice(1)
 
+  if (parts.length === 0) {
+    return
+  }
+
+  /**
+   * The map key for this definition, e.g. `"config get"`.
+   */
+  const key = parts.join(' ')
+
+  /**
+   * Deduplicated flag names for this definition.
+   */
   const flags = [
     ...new Set(definition.options.flatMap(({ nameSet }) => nameSet)),
   ]
 
-  const subCommands = [...new Set(subCommandsArray)]
+  // Ensure this command's entry exists and merge in any new flags.
+  const existing = commandMap.get(key)
 
-  if (subCommands.length > 2) {
-    subCommands.forEach((subCommand, index) => {
-      const key = splitCommands.slice(1, index + 2).join(' ')
-
-      const subCommandsAtDepth = definitionsMap.get(key)
-      if (subCommandsAtDepth == null) {
-        definitionsMap.set(key, new Set([subCommand]))
-      } else {
-        subCommandsAtDepth.add(subCommand)
+  if (existing) {
+    flags.forEach((flag) => {
+      if (!existing.flags.includes(flag)) {
+        existing.flags.push(flag)
       }
     })
+  } else {
+    commandMap.set(key, { flags, subcommands: new Set() })
   }
 
-  // const subCommandsArray = splitCommands.slice(2)
+  // Register each path segment as a subcommand of its parent so that
+  // intermediate nodes (e.g. "config") are aware of their children.
+  parts.slice(1).forEach((child, index) => {
+    /**
+     * The map key for the parent node at this depth.
+     */
+    const parentKey = parts.slice(0, index + 1).join(' ')
 
-  // if (definitionMap == null) {
-  return {
-    flags,
-    subCommands,
-    command,
-    definition,
-    splitCommands,
-  }
+    if (!commandMap.has(parentKey)) {
+      commandMap.set(parentKey, { flags: [], subcommands: new Set() })
+    }
 
-  // return definitionsMap.set(command, inf)
+    const commandInfo = commandMap.get(parentKey)
+
+    if (commandInfo) {
+      commandInfo.subcommands.add(child)
+
+      // if (definition.path === 'yarn set version' && child === 'version') {
+      //   console.dir(
+      //     { definition, child },
+      //     { depth: 2, getters: false, sorted: true },
+      //   )
+      //   commandInfo.subcommands.add('latest')
+      //   commandInfo.subcommands.add('berry')
+      //   commandInfo.subcommands.add('stable')
+      //   commandInfo.subcommands.add('canary')
+      //   commandInfo.subcommands.add('classic')
+      //   commandInfo.subcommands.add('self')
+      // }
+    }
+  })
 })
 
-const completions = [
+/**
+ * The unique set of top-level Yarn subcommands (e.g. `"add"`, `"install"`),
+ * derived from the first path segment of every definition.
+ */
+const topLevelCommands = [
   ...new Set(
-    info.map(({ flags, subCommands, splitCommands }) => {
-      if (subCommands.length) {
-        return `\n_${splitCommands.join('_')}() {\n  local flags subcommands\n\n  subcommands=(\n    ${[...subCommands].join(`\n    `)}\n  )\n\n  flags=(\n    ${[...flags].join(`\n    `)}\n  )\n\n  mapfile -t COMPREPLY < <(compgen -W "\${subcommands[*]}" -- "$cur")\n}\n`
-      }
-
-      return `\n_${splitCommands.slice(0, 2).join('_')}() {\n  ${flags.length === 0 ? 'local flags=()\n' : `local flags\n\n  flags=(\n    ${[...flags].join('\n    ')}\n  )`}\n\n  mapfile -t COMPREPLY < <(compgen -W "\${flags[*]}" -- "$cur")\n}\n`
-    }),
+    definitions
+      .map((definition) => definition.path.split(' ')[1])
+      .filter((cmd) => cmd != null),
   ),
-].concat(
-  `\n\n_yarn() {\n  local commands\n\n  commands=(\n    ${[...new Set(info.map(({ command }) => command))].join('\n    ')}\n  )\n\n  mapfile -t COMPREPLY < <(compgen -W "\${commands[*]}" -- "$cur")\n}\n
-_yarn_completion() {
-  local cur prev cword
+]
 
-  _get_comp_words_by_ref -n : cur prev words cword || return 1
+/**
+ * Converts a space-separated command path into a valid bash function name.
+ *
+ * @param path - The command path relative to `yarn`, e.g. `"config get"`.
+ * @returns The bash function name, e.g. `"_yarn_config_get"`. When `path` is empty the root completion function `"_yarn"` is returned.
+ *
+ * @example
+ * ```ts
+ * toFuncName('config get') // '_yarn_config_get'
+ * toFuncName('')           // '_yarn'
+ * ```
+ */
+const toFuncName = (path: string) =>
+  path ? `_yarn_${path.replaceAll(/ /g, '_')}` : '_yarn'
 
-  if [[ $cword -eq 1 ]]; then
-    _yarn
-    return 0
+/**
+ * Generates a bash array assignment string for use inside a bash function body.
+ *
+ * @param name - The bash variable name to assign to.
+ * @param items - The items to populate the array with.
+ * @returns A formatted bash array assignment with two-space indentation.
+ *
+ * @example
+ *
+ * ```ts
+ * bashArray('flags', ['--json', '--exact'])
+ * // '  flags=(\n    --json\n    --exact\n  )\n'
+ * ```
+ */
+const bashArray = (name: string, items: string[]) =>
+  `  ${name}=(\n    ${items.join('\n    ')}\n  )\n`
 
-  elif [[ $cword -gt 1 ]]; then
+/**
+ * Generates the `mapfile` line that populates `COMPREPLY` via `compgen`.
+ *
+ * @param varName - The bash array variable to draw completions from.
+ * @param [indent='  '] - Leading whitespace. Defaults to two spaces.
+ * @returns The formatted `mapfile`/`compgen` bash line.
+ */
+const compgenLine = (varName: string, indent = '  ') =>
+  `${indent}mapfile -t COMPREPLY < <(compgen -W "\${${varName}[*]}" -- "\${cur}")`
 
-    case $prev in
-    add) _yarn_add ;;
-    bin) _yarn_bin ;;
-    cache) _yarn_cache_clean ;;
-    config) _yarn_config ;;
-    constraints) _yarn_constraints ;;
-    dedupe) _yarn_dedupe ;;
-    dlx) _yarn_dlx ;;
-    exec) _yarn_exec ;;
-    explain) _yarn_explain ;;
-    info) _yarn_info ;;
-    init) _yarn_init ;;
-    install) _yarn_install ;;
-    link) _yarn_link ;;
-    node) _yarn_node ;;
-    npm) _yarn_npm_audit ;;
-    pack) _yarn_pack ;;
-    patch) _yarn_patch ;;
-    patch-commit) _yarn_patch-commit ;;
-    plugin) _yarn_plugin_check ;;
-    rebuild) _yarn_rebuild ;;
-    remove) _yarn_remove ;;
-    run) _yarn_run ;;
-    search) _yarn_search ;;
-    set) _yarn_set_resolution ;;
-    stage) _yarn_stage ;;
-    unlink) _yarn_unlink ;;
-    unplug) _yarn_unplug ;;
-    up | upgrade-interactive) _yarn_up || return 1 ;;
-    version) _yarn_version || return 1 ;;
-    why) _yarn_why || return 1 ;;
-    workspace | workspaces-focus)
-      if [[ $cur == -* ]]; then
-        mapfile -t COMPREPLY < <(compgen -W "--json --production -A --all --from -R --recursive -W --worktree -v --verbose -p --parallel -i --interlaced -j --jobs -t --topological --topological-dev --include --exclude --no-private --since -n --dry-run" -- "$cur")
-      else
-        mapfile -t COMPREPLY < <(compgen -W "focus foreach list" -- "$cur")
-      fi
-      return 0
-      ;;
-    esac
+const createLines = () => {
+  /**
+   * The lines that will be joined and written to the output bash script.
+   * Pre-populated with the shebang and a blank line.
+   */
+  const lines: string[] = ['#!/bin/bash', '']
 
-    return 0
-  fi
+  // Generate one bash completion function per command-tree node.
+  commandMap.forEach(({ flags, subcommands }, path) => {
+    // Skip 'workspace' — handled by a custom dynamic completion function below.
+    if (path === 'workspace' || path.startsWith('workspace ')) {
+      return
+    }
+
+    const funcName = toFuncName(path)
+    const uniqueFlags = [...new Set(flags)]
+
+    // Special case: `yarn set version` — add extra subcommands that aren't defined
+    if (funcName === '_yarn_set_version') {
+      subcommands.add('latest')
+      subcommands.add('berry')
+      subcommands.add('stable')
+      subcommands.add('canary')
+      subcommands.add('classic')
+      subcommands.add('self')
+    }
+
+    const hasSubcommands = subcommands.size > 0
+    const hasFlags = uniqueFlags.length > 0
+
+    lines.push(`${funcName}() {`)
+
+    if (hasSubcommands && hasFlags) {
+      // Command has both subcommands and flags: complete subcommands by default,
+      // flags when the current word starts with "-".
+      lines.push(`  local -a subcommands flags\n`)
+      lines.push(bashArray('subcommands', [...subcommands]))
+      lines.push(bashArray('flags', uniqueFlags))
+      lines.push(`  if [[ \${cur} == -* ]]; then`)
+      lines.push(compgenLine('flags', '    '))
+      lines.push(`  else`)
+      lines.push(compgenLine('subcommands', '    '))
+      lines.push(`  fi`)
+    } else if (hasSubcommands) {
+      // Command only has subcommands.
+      lines.push(`  local -a subcommands\n`)
+      lines.push(bashArray('subcommands', [...subcommands]))
+      lines.push(compgenLine('subcommands'))
+    } else {
+      // Leaf command: complete flags only.
+      lines.push(`  local -a flags\n`)
+      lines.push(bashArray('flags', uniqueFlags))
+      lines.push(compgenLine('flags'))
+    }
+
+    lines.push(`}`)
+    lines.push(``)
+  })
+
+  // Custom _yarn_workspace function: completes workspace names dynamically.
+  // Uses `yarn workspaces list --json | json -ga` to parse workspace entries,
+  // filtering out the root workspace (location === ".").
+  lines.push(`_yarn_workspace() {`)
+  lines.push(`  local json_output`)
+  lines.push(`  local -a workspace_names`)
+  lines.push(`  json_output=$(yarn workspaces list --json)`)
+  lines.push(`  if [[ "\${cur}" == .* ]]; then`)
+  lines.push(`    mapfile -t workspace_names < <(`)
+  lines.push(
+    `      echo "\${json_output}" | json -ga -c 'this.location !== "."' -e 'this.location="./"+this.location' location`,
+  )
+  lines.push(`    )`)
+  lines.push(`  else`)
+  lines.push(`    mapfile -t workspace_names < <(`)
+  lines.push(
+    `      echo "\${json_output}" | json -ga -c 'this.location !== "."' name`,
+  )
+  lines.push(`    )`)
+  lines.push(`  fi`)
+  lines.push(
+    `  mapfile -t COMPREPLY < <(compgen -W "\${workspace_names[*]}" -- "\${cur}")`,
+  )
+  lines.push(`}`)
+  lines.push(``)
+
+  // Top-level _yarn function — completes the first argument after "yarn".
+  lines.push(`_yarn() {`)
+  lines.push(`  local -a commands\n`)
+  lines.push(bashArray('commands', topLevelCommands))
+  lines.push(compgenLine('commands'))
+  // lines.push(
+  //   bashArray(
+  //     'flags',
+  //     definitions.flatMap(({ options }) =>
+  //       options.flatMap(({ nameSet }) => nameSet),
+  //     ),
+  //   ),
+  // )
+  lines.push(`}`)
+  lines.push(``)
+
+  // Dispatcher: walks $words (skipping flags) to build the target function name,
+  // then calls it. Falls back to _yarn if no specific handler exists.
+  //
+  // Special case: `yarn workspace <name> <cmd...>` — words[2] is a dynamic
+  // workspace name and must be skipped when routing the subsequent command.
+  lines.push(`_yarn_completion() {`)
+  lines.push(`  local cur prev`)
+  lines.push(`  local -a words`)
+  lines.push(`  local -i cword\n`)
+  lines.push(`  _get_comp_words_by_ref -n : cur prev words cword || return 1`)
+  lines.push(``)
+  lines.push(`  local cmd="_yarn"`)
+  lines.push(`  local -i i\n`)
+  lines.push(
+    `  if [[ "\${words[1]}" == "workspace" && \${cword} -gt 2 ]]; then`,
+  )
+  lines.push(
+    `    # Skip words[2] (the workspace name) and dispatch on the rest.`,
+  )
+  lines.push(`    for ((i = 3; i < cword; i++)); do`)
+  lines.push(`      if [[ "\${words[i]}" != -* ]]; then`)
+  lines.push(`        cmd="\${cmd}_\${words[i]}"`)
+  lines.push(`      fi`)
+  lines.push(`    done`)
+  lines.push(`  else`)
+  lines.push(`    for ((i = 1; i < cword; i++)); do`)
+  lines.push(`      if [[ "\${words[i]}" != -* ]]; then`)
+  lines.push(`        cmd="\${cmd}_\${words[i]}"`)
+  lines.push(`      fi`)
+  lines.push(`    done`)
+  lines.push(`  fi`)
+  lines.push(``)
+  lines.push(`  if declare -f "\${cmd}" >/dev/null 2>&1; then`)
+  lines.push(`    "\${cmd}"`)
+  lines.push(`  else`)
+  lines.push(`    _yarn`)
+  lines.push(`  fi`)
+  lines.push(`}`)
+  lines.push(``)
+  lines.push(`if type complete &>/dev/null; then`)
+  lines.push(`  complete -o default -F _yarn_completion yarn`)
+  lines.push(`  complete -o default -F _yarn_completion y`)
+  lines.push(`fi`)
+  lines.push(``)
+
+  return lines
 }
 
-complete -o default -F _yarn_completion yarn
-`,
-)
+/**
+ * Cleans the output directory, recreates it, and writes the generated bash
+ * completion script to {@linkcode BASH_FILE}.
+ */
+const main = async () => {
+  await clean()
 
-await fs.mkdir('./dist', { recursive: true })
+  await fs.mkdir(OUTPUT_DIRECTORY, { recursive: true })
 
-await fs.writeFile(
-  './dist/completions-for-yarn.bash',
-  `#!/bin/bash\n${completions.join('')}`,
-)
+  const lines = createLines()
+
+  await fs.writeFile(BASH_FILE, lines.join('\n'))
+}
+
+void main()

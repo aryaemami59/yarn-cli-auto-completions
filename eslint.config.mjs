@@ -1,10 +1,10 @@
 import {
-  configs,
   disabledRules,
   flatESLintConfig,
   globalIgnores,
-  parser,
   prettierConfig,
+  tseslintConfigs,
+  tseslintParser,
 } from '@aryaemami59/eslint-config'
 import js from '@eslint/js'
 import { defineConfig } from 'eslint/config'
@@ -15,16 +15,16 @@ const eslintConfig = defineConfig([
   js.configs.recommended,
   {
     languageOptions: {
-      parser,
+      parser: tseslintParser,
     },
   },
 
-  { extends: [configs.recommended] },
+  { extends: [tseslintConfigs.recommended] },
   {
     files: ['**/*.(c|m)?[tj]sx?'],
     extends: [
-      configs.strictTypeChecked,
-      configs.stylisticTypeChecked,
+      tseslintConfigs.strictTypeChecked,
+      tseslintConfigs.stylisticTypeChecked,
       flatESLintConfig,
     ],
     name: `${packageJson.name}/overrides`,

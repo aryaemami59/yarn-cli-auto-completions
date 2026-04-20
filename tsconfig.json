@@ -22,6 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
     "outDir": "./dist",
     "resolveJsonModule": true,
     "rewriteRelativeImportExtensions": true,
@@ -35,6 +36,6 @@
     "useUnknownInCatchVariables": true,
     "verbatimModuleSyntax": true
   },
-  "extends": "@aryaemami59/tsconfig/node-next/with-js",
+  "extends": "@aryaemami59/tsconfig/nodenext/nodenext/with-js",
   "include": ["**/*.*"]
 }

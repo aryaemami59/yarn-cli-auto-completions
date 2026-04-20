@@ -9,26 +9,27 @@
   },
   "description": "Auto completions for Yarn CLI commands",
   "devDependencies": {
-    "@aryaemami59/eslint-config": "^0.0.7",
-    "@aryaemami59/prettier-config": "^0.0.7",
-    "@aryaemami59/tsconfig": "^0.0.7",
-    "@aryaemami59/vitest-config": "^0.0.7",
-    "@eslint/js": "^9.39.2",
-    "@types/node": "^25.2.3",
-    "@yarnpkg/cli": "^4.12.0",
-    "eslint": "^9.39.2",
-    "prettier": "^3.8.1",
+    "@aryaemami59/eslint-config": "^0.0.8",
+    "@aryaemami59/prettier-config": "^0.0.8",
+    "@aryaemami59/tsconfig": "^0.0.8",
+    "@aryaemami59/vitest-config": "^0.0.8",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.0",
+    "@yarnpkg/cli": "^4.14.1",
+    "eslint": "^10.2.1",
+    "prettier": "^3.8.3",
+    "rimraf": "^6.1.3",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vitest": "^4.0.18"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.9",
+    "vitest": "^4.1.4"
   },
   "engines": {
     "node": ">=22.0.0"
   },
   "files": [
-    "dist",
-    "src"
+    "dist/",
+    "src/"
   ],
   "funding": [
     {
@@ -46,7 +47,7 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "name": "yarn-cli-auto-completions",
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.14.1",
   "publishConfig": {
     "provenance": true
   },
@@ -57,6 +58,7 @@
   },
   "scripts": {
     "build": "node src/index.ts",
+    "clean": "rimraf dist/",
     "format": "prettier --ignore-path=$PROJECT_CWD/.gitignore --config=$PROJECT_CWD/prettier.config.mjs --write $INIT_CWD",
     "format-check": "prettier --ignore-path=$PROJECT_CWD/.gitignore --config=$PROJECT_CWD/prettier.config.mjs --check $INIT_CWD",
     "lint": "eslint --config=$PROJECT_CWD/eslint.config.mjs --no-error-on-unmatched-pattern $INIT_CWD",
